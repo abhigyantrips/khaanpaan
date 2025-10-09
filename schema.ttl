@@ -1,0 +1,66 @@
+@prefix : <http://example.org/recipe/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+# Classes
+:Meal a rdfs:Class ;
+    rdfs:label "Meal" ;
+    rdfs:comment "A recipe or dish from TheMealDB" .
+
+:Ingredient a rdfs:Class ;
+    rdfs:label "Ingredient" ;
+    rdfs:comment "An ingredient used in recipes" .
+
+:Category a rdfs:Class ;
+    rdfs:label "Category" ;
+    rdfs:comment "A meal category (e.g., Dessert, Seafood)" .
+
+:Cuisine a rdfs:Class ;
+    rdfs:label "Cuisine" ;
+    rdfs:comment "A cuisine or area (e.g., Italian, Indian)" .
+
+# Properties
+:hasName a rdf:Property ;
+    rdfs:domain :Meal ;
+    rdfs:range rdfs:Literal ;
+    rdfs:label "has name" .
+
+:hasInstructions a rdf:Property ;
+    rdfs:domain :Meal ;
+    rdfs:range rdfs:Literal ;
+    rdfs:label "has instructions" .
+
+:belongsToCategory a rdf:Property ;
+    rdfs:domain :Meal ;
+    rdfs:range :Category ;
+    rdfs:label "belongs to category" .
+
+:belongsToCuisine a rdf:Property ;
+    rdfs:domain :Meal ;
+    rdfs:range :Cuisine ;
+    rdfs:label "belongs to cuisine" .
+
+:hasIngredient a rdf:Property ;
+    rdfs:domain :Meal ;
+    rdfs:range :Ingredient ;
+    rdfs:label "has ingredient" .
+
+:ingredientName a rdf:Property ;
+    rdfs:domain :Ingredient ;
+    rdfs:range rdfs:Literal ;
+    rdfs:label "ingredient name" .
+
+:ingredientMeasure a rdf:Property ;
+    rdfs:domain :Ingredient ;
+    rdfs:range rdfs:Literal ;
+    rdfs:label "ingredient measure" .
+
+:hasThumbnail a rdf:Property ;
+    rdfs:domain :Meal ;
+    rdfs:range rdfs:Literal ;
+    rdfs:label "has thumbnail" .
+
+:hasYoutubeLink a rdf:Property ;
+    rdfs:domain :Meal ;
+    rdfs:range rdfs:Literal ;
+    rdfs:label "has youtube link" .
