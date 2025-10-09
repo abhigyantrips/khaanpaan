@@ -22,13 +22,13 @@ pip install rdflib requests
 
 ### Generate Knowledge Graph
 ```bash
-python generate_graph.py
+python graph_generate.py
 ```
 This fetches 50 random meals from TheMealDB and creates `recipe_knowledge_graph.ttl`.
 
 ### Query the Graph
 ```bash
-python query_graph.py
+python graph_query.py
 ```
 Runs example SPARQL queries against the generated graph.
 
@@ -56,8 +56,8 @@ SELECT ?mealName WHERE {
 ## File Structure
 
 ```
-├── generate_graph.py          # Graph generation script
-├── query_graph.py             # SPARQL query examples
+├── graph_generate.py          # Graph generation script
+├── graph_query.py             # SPARQL query examples
 ├── schema.ttl                 # RDFS schema definition
 ├── recipe_knowledge_graph.ttl # Generated knowledge graph
 └── README.md                  # Documentation
