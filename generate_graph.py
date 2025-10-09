@@ -1,3 +1,17 @@
+"""
+RDFS Recipe Knowledge Graph Generator
+
+This script fetches recipe data from TheMealDB API and generates
+an RDF knowledge graph.
+
+Data Source: TheMealDB (https://www.themealdb.com)
+API: https://www.themealdb.com/api.php
+License: Free for non-commercial use with attribution
+
+Author: Abhigyan Tripathi
+Date: October 2025
+"""
+
 import requests
 import time
 from rdflib import Graph, Namespace, RDF, RDFS, Literal, URIRef
