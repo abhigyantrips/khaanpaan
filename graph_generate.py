@@ -16,6 +16,9 @@ import requests
 import time
 from rdflib import Graph, Namespace, RDF, RDFS, Literal, URIRef
 from urllib.parse import quote
+import matplotlib.pyplot as plt
+import networkx as nx
+from collections import defaultdict
 
 # Define namespaces
 RECIPE = Namespace("http://example.org/recipe/")
@@ -119,6 +122,141 @@ def add_meal_to_graph(meal):
             g.add((meal_uri, RECIPE.hasIngredient, ingredient_uri))
 
 
+def visualize_knowledge_graph(rdf_graph, output_file="recipe_kg_visualization.png"):
+    """Generate and export a visualization of the knowledge graph."""
+    print("\nGenerating knowledge graph visualization...")
+    
+    # Create NetworkX graph
+    nx_graph = nx.DiGraph()
+    
+    # Track node types for coloring
+    node_types = defaultdict(set)
+    node_labels = {}
+    
+    # Add nodes and edges from RDF graph
+    for subj, pred, obj in rdf_graph:
+        subj_str = str(subj)
+        pred_str = str(pred).split("/")[-1].split("#")[-1]
+        obj_str = str(obj)
+        
+        # Determine node types
+        if str(MEAL) in subj_str:
+            node_types['meal'].add(subj_str)
+        elif str(CATEGORY) in subj_str:
+            node_types['category'].add(subj_str)
+        elif str(CUISINE) in subj_str:
+            node_types['cuisine'].add(subj_str)
+        elif str(INGREDIENT) in subj_str:
+            node_types['ingredient'].add(subj_str)
+        
+        # Skip RDF.type and RDFS predicates
+        if pred in [RDF.type, RDFS.label]:
+            continue
+        
+        # Skip literal objects for cleaner visualization
+        if isinstance(obj, Literal):
+            # Store labels for display
+            if pred_str in ['hasName', 'label', 'ingredientName']:
+                node_labels[subj_str] = str(obj)[:20]
+            continue
+        
+        # Add edge only if both nodes will be in the graph
+        if str(CATEGORY) in obj_str:
+            node_types['category'].add(obj_str)
+        elif str(CUISINE) in obj_str:
+            node_types['cuisine'].add(obj_str)
+        elif str(INGREDIENT) in obj_str:
+            node_types['ingredient'].add(obj_str)
+        elif str(MEAL) in obj_str:
+            node_types['meal'].add(obj_str)
+        else:
+            # Skip objects that aren't our entity types
+            continue
+        
+        # Add edge
+        nx_graph.add_edge(subj_str, obj_str, label=pred_str)
+    
+    # Set up visualization
+    plt.figure(figsize=(20, 16))
+    
+    # Use shell_layout (doesn't require scipy)
+    # Organize nodes in shells by type
+    shells = [
+        list(node_types.get('cuisine', [])),
+        list(node_types.get('category', [])),
+        list(node_types.get('meal', [])),
+        list(node_types.get('ingredient', []))
+    ]
+    shells = [shell for shell in shells if shell]  # Remove empty shells
+    
+    try:
+        pos = nx.shell_layout(nx_graph, nlist=shells)
+    except:
+        # Fallback to circular layout if shell fails
+        pos = nx.circular_layout(nx_graph)
+    
+    # Define colors for different node types
+    colors = {
+        'meal': '#FF6B6B',
+        'category': '#4ECDC4',
+        'cuisine': '#45B7D1',
+        'ingredient': '#FFA07A',
+        'default': '#95E1D3'
+    }
+    
+    # Draw nodes by type
+    for node_type, nodes in node_types.items():
+        nx.draw_networkx_nodes(
+            nx_graph,
+            pos,
+            nodelist=list(nodes),
+            node_color=colors.get(node_type, colors['default']),
+            node_size=500 if node_type in ['category', 'cuisine'] else 100,
+            alpha=0.8,
+            label=node_type.capitalize()
+        )
+    
+    # Draw edges
+    nx.draw_networkx_edges(
+        nx_graph,
+        pos,
+        edge_color='gray',
+        arrows=True,
+        arrowsize=10,
+        alpha=0.3,
+        width=0.5
+    )
+    
+    # Add labels for category and cuisine nodes
+    label_nodes = {
+        node: node_labels.get(node, node.split("/")[-1][:15])
+        for node in list(node_types.get('category', [])) + list(node_types.get('cuisine', []))
+    }
+    nx.draw_networkx_labels(
+        nx_graph,
+        pos,
+        labels=label_nodes,
+        font_size=8,
+        font_weight='bold'
+    )
+    
+    plt.title(
+        "Recipe Knowledge Graph Visualization\n"
+        f"Nodes: {nx_graph.number_of_nodes()} | "
+        f"Edges: {nx_graph.number_of_edges()}",
+        fontsize=16,
+        fontweight='bold',
+        pad=20
+    )
+    plt.legend(scatterpoints=1, frameon=True, labelspacing=1, loc='upper left')
+    plt.axis('off')
+    plt.tight_layout()
+    
+    # Save the figure
+    plt.savefig(output_file, dpi=300, bbox_inches='tight', facecolor='white')
+    print(f"Visualization saved: {output_file}")
+    plt.close()
+
 def main():
     print("=== RDFS Recipe Knowledge Graph Generator ===\n")
     
@@ -138,6 +276,11 @@ def main():
     print(f"\nKnowledge graph generated successfully!")
     print(f"Output: {output_file}")
     print(f"Total triples: {len(g)}")
+    
+    # Generate visualization
+    visualize_knowledge_graph(g, "recipe_knowledge_graph.png")
+    
+    print("\nAll files exported successfully!")
 
 
 if __name__ == "__main__":

@@ -1,2 +1,4 @@
+matplotlib==3.10.7
+networkx==3.5
 rdflib==7.0.0
 requests==2.31.0
